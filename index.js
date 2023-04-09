@@ -15,7 +15,7 @@
 // });
 
 
-// arrow function
+// ? arrow function
 
 // export const doSomething  = () => {
 //     return <div>hello</div>
@@ -80,5 +80,53 @@ function myRest(firstName, lastName, ...otherInfo) {
   }
   
   // Invoke myBio function while passing five arguments to its parameters:
-  const restDemo = myRest("Oluwatobi", "Sofela", "CodeSweetly", "Web Developer", "Male");
-  console.log(restDemo);
+//   const restDemo = myRest("Oluwatobi", "Sofela", "CodeSweetly", "Web Developer", "Male");
+//   console.log(restDemo);
+
+//   console.log("promise start");
+
+//   const event = new Promise((resolve, reject) =>{
+//     var name = "Pedro";
+//     if (name == "Pedro"){
+//         resolve(name);
+//     } else {
+//         reject("Name was not Pedro, name was : " + name);
+//     }
+//   });
+
+//   event
+//   .then((name)=> {
+//     console.log(name);
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   })
+//   .finally(() => {
+//     console.log("promise finish");
+//   })
+
+// demo
+const axios = require("axios");
+// using async and await
+const fetchData = (async () => {
+    try {
+        const data = await axios.get("https://cat-fact.herokuapp.com/asdad");
+        console.log(data);
+    } catch (err)
+    {
+        console.log(err);
+    }
+
+})();
+
+// this is using promises
+// const data = axios.get("https://cat-fact.herokuapp.com/facts");
+// data.then((res) => {
+//     console.log(res.data);
+// })
+// .catch((err) => {
+//     console.log(err);
+// })
+// .finally(() => {
+//     console.log("promise axios resolved");
+// })

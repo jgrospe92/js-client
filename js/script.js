@@ -1,11 +1,19 @@
-async function fetchShows(){
+let globalCounter = 0;
+
+/**
+ * @desc fetch shows data from the https://api.tvmaze.com/show APi
+ */
+const fetchShows = async () => {
     const uri = 'https://api.tvmaze.com/shows';
     const data = await getData(uri);
     parsedData(data);
-
+   
 }
 
-function clearData(){
+/**
+ * @desc Clears the table
+ */
+const clearData = () => {
     const tblEl = document.getElementById('tbl-body');
     tblEl.textContent = "";
 
@@ -13,8 +21,11 @@ function clearData(){
     counter.textContent = 0;
 }
 
-function parsedData(data){
-
+/**
+ * @desc Creates html representation of the response object
+ * @param {object} data - The response object
+ */
+const parsedData = (data) => {
     var rows = '';
     data.forEach(data => {
         rows += 
@@ -30,19 +41,27 @@ function parsedData(data){
         `
     });
 
-    
     const tblEl = document.getElementById('tbl-body');
     tblEl.innerHTML = rows;
     const counter = document.getElementById('data_count');
-    counter.innerHTML = data.length;
-    
+    globalCounter = data.length
+    counter.innerHTML = globalCounter;
 }
-// implements an HTTP client
-// using the fetch api
-async function getData(url)
-{
-    // STEP 1 - Configure the request header
-    const httpHeaders = {
+
+const displayErr = () => {
+    const tblEl = document.getElementById('tbl-body');
+    tblEl.innerHTML = "<b> something went wrong with your request </b>";
+}
+
+/**
+ * @desc Implements http client using fetch APi
+ * @param {string} url - The URl to where to fetch the data 
+ * @returns {object} - The responses data
+ */
+const getData = async (url) => {
+     // STEP 1 - Configure the request header
+     let response = null;
+     const httpHeaders = {
         "Content-Type": "application/json",
         "Accept": "application/json",
       };
@@ -57,21 +76,36 @@ async function getData(url)
       }); 
 
     // STEP 3 - Now we can send the request using the fetch APi
-    const response = await fetch(url, request);
-    if (response.status == 200){
-        const data = response.json();
-        return data;
+    try {
+        response = await fetch(url, request);
+        if (response.status == 200){
+            const data = await response.json();
+            return data;
+        }
+    } catch (err) {
+        console.log(err);
     }
 }
 
-// event delegation
+/**
+ * @desc remove a single item in the table
+ * @param {object} e - The source of the event
+ */
 function removeItem(e){
     let target, elParent, elGrandParent;
     target = e.target || e.srcElement;
     elParent = target.parentNode;
     elGrandParent = elParent.parentNode;
     elGrandParent.removeChild(elParent);
+    updateItemCounter();
 
+}
+/**
+ * @desc update the counter badge when item is removed
+ */
+const updateItemCounter = () => {
+    const counter = document.getElementById('data_count');
+    counter.innerHTML = --globalCounter;
 }
 
 // add the function to the event using event listeners
