@@ -1,15 +1,22 @@
 async function fetchShows(){
     const uri = 'https://api.tvmaze.com/shows';
-    const datas = await getData(uri);
-    //console.log(datas);
-    parsedData(datas);
+    const data = await getData(uri);
+    parsedData(data);
 
 }
 
-function parsedData(datas){
+function clearData(){
+    const tblEl = document.getElementById('tbl-body');
+    tblEl.textContent = "";
+
+    const counter = document.getElementById('data_count');
+    counter.textContent = 0;
+}
+
+function parsedData(data){
 
     var rows = '';
-    datas.forEach(data => {
+    data.forEach(data => {
         rows += 
         `
         <tr>
@@ -27,7 +34,7 @@ function parsedData(datas){
     const tblEl = document.getElementById('tbl-body');
     tblEl.innerHTML = rows;
     const counter = document.getElementById('data_count');
-    counter.innerHTML = datas.length;
+    counter.innerHTML = data.length;
     
 }
 // implements an HTTP client
@@ -56,3 +63,24 @@ async function getData(url)
         return data;
     }
 }
+
+// event delegation
+function removeItem(e){
+    let target, elParent, elGrandParent;
+    target = e.target || e.srcElement;
+    elParent = target.parentNode;
+    elGrandParent = elParent.parentNode;
+    elGrandParent.removeChild(elParent);
+
+}
+
+// add the function to the event using event listeners
+// let btn_el = document.getElementById('shows_btn_id');
+// btn_el.addEventListener('click', function(){fetchShows();}, false);
+
+// traditional DOM way
+document.getElementById('shows_btn_id').onclick = fetchShows;
+document.getElementById('clear_btn').onclick = clearData;
+
+// event delegation
+document.getElementById('tbl-body').addEventListener('click', function(e){removeItem(e);},false);
