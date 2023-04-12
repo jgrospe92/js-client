@@ -21,25 +21,62 @@ const clearData = () => {
     counter.textContent = 0;
 }
 
+const changeTable = (resource_name) => {
+    let header = '';
+
+    if (resource_name == "films")
+    {
+        header +=
+        `
+        <th>Title</th>
+        <th>Description</th>
+        <th>Language</th>
+        <th>Category</th>
+        <th>Actor</th>
+        <th>Release Year</th>
+        `
+    } else if (resource_name == "actors")
+    {
+        header += 
+        `
+        <th>Actor</th>
+        <th>Language</th>
+        <th>Genres</th>
+        <th>Premiered</th>
+        <th>Rating</th>
+        <th>Status</th>
+        ` 
+    }
+
+    const tblHeader = document.getElementById('tbl_header');
+    tblHeader.innerHTML = header;
+}
+
+
 /**
  * @desc Creates html representation of the response object
  * @param {object} data - The response object
  */
-const parsedData = (data) => {
-    var rows = '';
-    data.forEach(data => {
-        rows += 
-        `
-        <tr>
-        <td>${data.name}</td>
-        <td>${data.language}</td>
-        <td>${data.genres.join(", ")}</td>
-        <td>${data.premiered}</td>
-        <td>${data.rating.average}</td>
-        <td>${data.status}</td>
-        </tr>
-        `
-    });
+const parsedData = (data, resource_name) => {
+    let rows = '';
+   
+    if (resource_name == "films"){
+
+        data.forEach(data => {
+            rows += 
+            `
+            <tr>
+            <td>${data.name}</td>
+            <td>${data.language}</td>
+            <td>${data.genres.join(", ")}</td>
+            <td>${data.premiered}</td>
+            <td>${data.rating.average}</td>
+            <td>${data.status}</td>
+            </tr>
+            `
+        });
+
+    }
 
     const tblEl = document.getElementById('tbl-body');
     tblEl.innerHTML = rows;
@@ -65,9 +102,7 @@ const getData = async (url) => {
         "Content-Type": "application/json",
         "Accept": "application/json",
       };
-
     const reqHeaders = new Headers(httpHeaders);
-
     // STEP 2 - Create and init an HTTP request : GET | POST | DELETE
     const request = new Request({
         method: "POST",
@@ -115,6 +150,10 @@ const updateItemCounter = () => {
 // traditional DOM way
 document.getElementById('shows_btn_id').onclick = fetchShows;
 document.getElementById('clear_btn').onclick = clearData;
+document.getElementById('resource_name').addEventListener('change', (e) => {
+    let resource_name = e.target.value;
+    changeTable(resource_name);
+})
 
 // event delegation
 document.getElementById('tbl-body').addEventListener('click', function(e){removeItem(e);},false);
