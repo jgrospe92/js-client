@@ -34,18 +34,30 @@ const changeTable = (resource_name) => {
         <th>Category</th>
         <th>Actor</th>
         <th>Release Year</th>
-        `
+        `;
     } else if (resource_name == "actors")
     {
         header += 
         `
-        <th>Actor</th>
-        <th>Language</th>
-        <th>Genres</th>
-        <th>Premiered</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Film title</th>
+        <th>Description</th>
+        <th>Category</th>
+        <th>Name</th>
+        <th>Release Year</th>
+        ` ;
+    } else {
+        header += 
+        `
+        <th>Category</th>
+        <th>Film Title</th>
+        <th>Description</th>
+        <th>Length</th>
         <th>Rating</th>
-        <th>Status</th>
-        ` 
+        <th>Release Year</th>
+        `;
+
     }
 
     const tblHeader = document.getElementById('tbl_header');
