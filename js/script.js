@@ -36,6 +36,7 @@ const changeTable = (resource_name) => {
     {
         header +=
         `
+        <th>#</th>
         <th>Title</th>
         <th>Description</th>
         <th>Language</th>
@@ -79,15 +80,15 @@ const changeTable = (resource_name) => {
  */
 const parsedData = (data, resource_name) => {
     let rows = '';
-
+    let item_counter = 1;
     switch(resource_name){
 
         case "films":
-        data.forEach(data => {
-           
+        data.forEach((data) => {
             rows += 
             `
             <tr>
+            <td>${item_counter++}</td>
             <td>${data.title}</td>
             <td>${data.description}</td>
             <td>${data.language}</td>
@@ -190,6 +191,7 @@ document.getElementById('shows_btn_id').addEventListener('click', () => {
 document.getElementById('clear_btn').onclick = clearData;
 document.getElementById('resource_name').addEventListener('change', (e) => {
     resource_name = e.target.value;
+    clearData();
     changeTable(resource_name);
 })
 
