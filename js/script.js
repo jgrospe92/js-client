@@ -1,4 +1,6 @@
 let globalCounter = 0;
+let resource_name = "films";
+let baseUrl = '/films-api';
 
 /**
  * @desc fetch shows data from the https://api.tvmaze.com/show APi
@@ -8,6 +10,12 @@ const fetchShows = async () => {
     const data = await getData(uri);
     parsedData(data);
    
+}
+
+const fetchFilms = async () => {
+    const uri = baseUrl + '/films';
+    const data = await getData(uri);
+    parsedData(data['data'], 'films');
 }
 
 /**
@@ -71,24 +79,32 @@ const changeTable = (resource_name) => {
  */
 const parsedData = (data, resource_name) => {
     let rows = '';
-   
-    if (resource_name == "films"){
 
+    switch(resource_name){
+
+        case "films":
         data.forEach(data => {
+           
             rows += 
             `
             <tr>
-            <td>${data.name}</td>
+            <td>${data.title}</td>
+            <td>${data.description}</td>
             <td>${data.language}</td>
-            <td>${data.genres.join(", ")}</td>
-            <td>${data.premiered}</td>
-            <td>${data.rating.average}</td>
-            <td>${data.status}</td>
+            <td>${data.category}</td>
+            <td>${data.actor.first_name} ${data.actor.last_name}</td>
+            <td>${data.release_year}</td>
             </tr>
             `
         });
+        break;
 
-    }
+        case "categories":
+            break;
+        case "actors":
+            break;
+    };
+   
 
     const tblEl = document.getElementById('tbl-body');
     tblEl.innerHTML = rows;
@@ -110,22 +126,22 @@ const displayErr = () => {
 const getData = async (url) => {
      // STEP 1 - Configure the request header
      let response = null;
-     const httpHeaders = {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      };
-    const reqHeaders = new Headers(httpHeaders);
     // STEP 2 - Create and init an HTTP request : GET | POST | DELETE
-    const request = new Request({
-        method: "POST",
-        headers: reqHeaders,
-        //url : uri
-      }); 
+    const myInit = {
+        method : "GET",
+        headers : {
+            Accept : "application/json",
+        },
+    }
+
+
+    const request = new Request(url, myInit);
 
     // STEP 3 - Now we can send the request using the fetch APi
     try {
-        response = await fetch(url, request);
-        if (response.status == 200){
+        response = await fetch(request);
+        console.log(response);
+        if (response.ok){
             const data = await response.json();
             return data;
         }
@@ -160,10 +176,20 @@ const updateItemCounter = () => {
 // btn_el.addEventListener('click', function(){fetchShows();}, false);
 
 // traditional DOM way
-document.getElementById('shows_btn_id').onclick = fetchShows;
+document.getElementById('shows_btn_id').addEventListener('click', () => {
+    switch (resource_name){
+        case "films":
+            fetchFilms();
+            break;
+        case 'categories':
+            break;
+        case "actors":
+            break;
+    }
+})
 document.getElementById('clear_btn').onclick = clearData;
 document.getElementById('resource_name').addEventListener('change', (e) => {
-    let resource_name = e.target.value;
+    resource_name = e.target.value;
     changeTable(resource_name);
 })
 
