@@ -1,6 +1,6 @@
 let globalCounter = 0;
 let resource_name = "films";
-let baseUrl = '/films-api';
+let baseUrl = window.location.protocol + '//' + window.location.hostname;
 
 /**
  * @desc fetch shows data from the https://api.tvmaze.com/show APi
@@ -9,13 +9,31 @@ const fetchShows = async () => {
     const uri = 'https://api.tvmaze.com/shows';
     const data = await getData(uri);
     parsedData(data);
-   
+
 }
 
 const fetchFilms = async () => {
-    const uri = baseUrl + '/films';
-    const data = await getData(uri);
+    // create a url
+    let uri = new URL('films-api/films', baseUrl);
+    // let currentParams = new URLSearchParams(uri.search);
+    // // set the params
+    // currentParams.append("page", 1);
+    // currentParams.append("pageSize", 2);
+
+    // create new uri
+    const addQueries = (url, params = {}) =>
+        new URL(`${url.origin}${url.pathname}?${new URLSearchParams([
+            ...Array.from(url.searchParams.entries()),
+            ...Object.entries(params),
+        ])}`);
+
+    // console.log(currentParams.toString());
+
+    const newUrl = addQueries(uri,{'page':1, "pageSize" : 10, "category": "horror"})
+    // console.log(newUrl.href);
+    const data = await getData(newUrl.href);
     parsedData(data['data'], 'films');
+
 }
 
 /**
@@ -32,10 +50,9 @@ const clearData = () => {
 const changeTable = (resource_name) => {
     let header = '';
 
-    if (resource_name == "films")
-    {
+    if (resource_name == "films") {
         header +=
-        `
+            `
         <th>#</th>
         <th>Title</th>
         <th>Description</th>
@@ -44,10 +61,9 @@ const changeTable = (resource_name) => {
         <th>Actor</th>
         <th>Release Year</th>
         `;
-    } else if (resource_name == "actors")
-    {
-        header += 
-        `
+    } else if (resource_name == "actors") {
+        header +=
+            `
         <th>First Name</th>
         <th>Last Name</th>
         <th>Film title</th>
@@ -57,8 +73,8 @@ const changeTable = (resource_name) => {
         <th>Release Year</th>
         ` ;
     } else {
-        header += 
-        `
+        header +=
+            `
         <th>Category</th>
         <th>Film Title</th>
         <th>Description</th>
@@ -81,14 +97,14 @@ const changeTable = (resource_name) => {
 const parsedData = (data, resource_name) => {
     let rows = '';
     let item_counter = 1;
-    switch(resource_name){
+    switch (resource_name) {
 
         case "films":
-        data.forEach((data) => {
-            rows += 
-            `
+            data.forEach((data) => {
+                rows +=
+                    `
             <tr>
-            <td>${item_counter++}</td>
+            <td>${data.film_id}</td>
             <td>${data.title}</td>
             <td>${data.description}</td>
             <td>${data.language}</td>
@@ -97,15 +113,15 @@ const parsedData = (data, resource_name) => {
             <td>${data.release_year}</td>
             </tr>
             `
-        });
-        break;
+            });
+            break;
 
         case "categories":
             break;
         case "actors":
             break;
     };
-   
+
 
     const tblEl = document.getElementById('tbl-body');
     tblEl.innerHTML = rows;
@@ -125,13 +141,13 @@ const displayErr = () => {
  * @returns {object} - The responses data
  */
 const getData = async (url) => {
-     // STEP 1 - Configure the request header
-     let response = null;
+    // STEP 1 - Configure the request header
+    let response = null;
     // STEP 2 - Create and init an HTTP request : GET | POST | DELETE
     const myInit = {
-        method : "GET",
-        headers : {
-            Accept : "application/json",
+        method: "GET",
+        headers: {
+            Accept: "application/json",
         },
     }
 
@@ -142,7 +158,7 @@ const getData = async (url) => {
     try {
         response = await fetch(request);
         console.log(response);
-        if (response.ok){
+        if (response.ok) {
             const data = await response.json();
             return data;
         }
@@ -155,7 +171,7 @@ const getData = async (url) => {
  * @desc remove a single item in the table
  * @param {object} e - The source of the event
  */
-function removeItem(e){
+function removeItem(e) {
     let target, elParent, elGrandParent;
     target = e.target || e.srcElement;
     elParent = target.parentNode;
@@ -178,7 +194,7 @@ const updateItemCounter = () => {
 
 // traditional DOM way
 document.getElementById('shows_btn_id').addEventListener('click', () => {
-    switch (resource_name){
+    switch (resource_name) {
         case "films":
             fetchFilms();
             break;
@@ -196,4 +212,4 @@ document.getElementById('resource_name').addEventListener('change', (e) => {
 })
 
 // event delegation
-document.getElementById('tbl-body').addEventListener('click', function(e){removeItem(e);},false);
+document.getElementById('tbl-body').addEventListener('click', function (e) { removeItem(e); }, false);
