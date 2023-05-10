@@ -12,11 +12,15 @@ const fetchShows = async () => {
 
 }
 
+/**
+ * @desc fetch films data from localhost/films-api
+ */
+
 const fetchFilms = async () => {
     // create a url
     let uri = new URL('films-api/films', baseUrl);
     // let currentParams = new URLSearchParams(uri.search);
-    // // set the params
+    // set the params
     // currentParams.append("page", 1);
     // currentParams.append("pageSize", 2);
 
@@ -47,12 +51,18 @@ const clearData = () => {
     counter.textContent = 0;
 }
 
+/**
+ * 
+ * @param {string} resource_name 
+ * @description change table header based on the resource_name
+ */
+
 const changeTable = (resource_name) => {
     let header = '';
-
+  
     if (resource_name == "films") {
         header +=
-            `
+        `
         <th>#</th>
         <th>Title</th>
         <th>Description</th>
@@ -64,6 +74,7 @@ const changeTable = (resource_name) => {
     } else if (resource_name == "actors") {
         header +=
             `
+        <th>#</th>
         <th>First Name</th>
         <th>Last Name</th>
         <th>Film title</th>
@@ -75,6 +86,7 @@ const changeTable = (resource_name) => {
     } else {
         header +=
             `
+        <th>#</th>
         <th>Category</th>
         <th>Film Title</th>
         <th>Description</th>
@@ -82,7 +94,6 @@ const changeTable = (resource_name) => {
         <th>Rating</th>
         <th>Release Year</th>
         `;
-
     }
 
     const tblHeader = document.getElementById('tbl_header');
@@ -130,6 +141,9 @@ const parsedData = (data, resource_name) => {
     counter.innerHTML = globalCounter;
 }
 
+/**
+ * @desc display error message
+ */
 const displayErr = () => {
     const tblEl = document.getElementById('tbl-body');
     tblEl.innerHTML = "<b> something went wrong with your request </b>";
@@ -150,8 +164,6 @@ const getData = async (url) => {
             Accept: "application/json",
         },
     }
-
-
     const request = new Request(url, myInit);
 
     // STEP 3 - Now we can send the request using the fetch APi
@@ -191,8 +203,12 @@ const updateItemCounter = () => {
 // add the function to the event using event listeners
 // let btn_el = document.getElementById('shows_btn_id');
 // btn_el.addEventListener('click', function(){fetchShows();}, false);
-
 // traditional DOM way
+
+/**
+ * @param {string} resource name
+ * @description fetch films based on the selected resource name
+ */
 document.getElementById('shows_btn_id').addEventListener('click', () => {
     switch (resource_name) {
         case "films":
@@ -204,12 +220,32 @@ document.getElementById('shows_btn_id').addEventListener('click', () => {
             break;
     }
 })
+
+/**
+ * @description clears the table
+ */
 document.getElementById('clear_btn').onclick = clearData;
+
+/**
+ * @param {object} takes an html object
+ * @description change the table header based on the resource name 
+ */
 document.getElementById('resource_name').addEventListener('change', (e) => {
     resource_name = e.target.value;
     clearData();
     changeTable(resource_name);
 })
 
-// event delegation
+/**
+ * @param {object} takes an html object
+ * @description removes the selected li element
+ */
 document.getElementById('tbl-body').addEventListener('click', function (e) { removeItem(e); }, false);
+
+/**
+ * @desc Clears the form inputs
+ */
+document.getElementById('clear_form').addEventListener('click', function (e) { 
+    var form = document.getElementById('actor_form');
+    form.reset();
+}, false);
