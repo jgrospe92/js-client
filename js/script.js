@@ -8,26 +8,30 @@ let baseUrl = window.location.protocol + "//" + window.location.hostname;
 const submitBtn = document.getElementById("submitBtn");
 
 /**
- * @desc fetch shows data from the https://api.tvmaze.com/show APi
+ * @description renders the pagination
+ * @param {Response} obj
  */
-const fetchShows = async () => {
-  const uri = "https://api.tvmaze.com/shows";
-  const data = await getData(uri);
-  parsedData(data);
+const renderPagination = (obj) => {
+  const prevBtn = document.getElementById("previous_btn");
+  const nextBtn = document.getElementById("next_btn");
+
+  if (obj.current_page == 1) {
+    nextBtn.classList.remove("disabled");
+  } else if (obj.current_page == obj.last_page) {
+    nextBtn.classList.add("disabled");
+  } else {
+    nextBtn.classList.remove("disabled");
+    nextBtn.classList.remove("disabled");
+  }
 };
 
 /**
  * @desc fetch films data from localhost/films-api
+ * TODO add the url as a parameters
  */
-
-const fetchFilms = async () => {
+const fetchFilms = async (page = 1, pageSize = 10, category = "") => {
   // create a url
   let uri = new URL("films-api/films", baseUrl);
-  // let currentParams = new URLSearchParams(uri.search);
-  // set the params
-  // currentParams.append("page", 1);
-  // currentParams.append("pageSize", 2);
-
   // create new uri
   const addQueries = (url, params = {}) =>
     new URL(
@@ -37,11 +41,24 @@ const fetchFilms = async () => {
       ])}`
     );
 
-  // console.log(currentParams.toString());
+  var newUrl = NaN;
 
-  const newUrl = addQueries(uri, { page: 1, pageSize: 10, category: "horror" });
+  if (category) {
+    newUrl = addQueries(uri, {
+      page: page,
+      pageSize: pageSize,
+      category: category,
+    });
+  } else {
+    newUrl = addQueries(uri, {
+      page: page,
+      pageSize: pageSize,
+    });
+  }
   // console.log(newUrl.href);
   const data = await getData(newUrl.href);
+  // render pagination
+  renderPagination(data);
   parsedData(data["data"], "films");
 };
 
@@ -82,7 +99,6 @@ const handleCreateActor = async (e) => {
   }
 
   var bodyReq = JSON.stringify([{ first_name: fname, last_name: lname }]);
-  console.log(bodyReq);
   try {
     const response = await fetch(uri, {
       method: "POST",
@@ -97,6 +113,12 @@ const handleCreateActor = async (e) => {
   resetForm();
 };
 
+/**
+ *
+ * @param {String} input
+ * @returns {String} input
+ * @desc sanitize user inputs
+ */
 const sanitizeInput = (input) => {
   return input
     .replace(/&/g, "&amp;")
@@ -229,7 +251,6 @@ const getData = async (url) => {
   // STEP 3 - Now we can send the request using the fetch APi
   try {
     response = await fetch(request);
-    console.log(response);
     if (response.ok) {
       const data = await response.json();
       return data;

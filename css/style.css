@@ -1,0 +1,8 @@
+#table_data {
+    max-height: clamp(5em,100vh,100vh) !important;
+    overflow: auto !important;
+}
+
+a {
+    cursor: pointer;
+}
