@@ -1,6 +1,9 @@
 let globalCounter = 0;
 let resource_name = "films";
 let baseUrl = window.location.protocol + "//" + window.location.hostname;
+let current_page = 1;
+let previous_page = -1;
+let page_size = 10;
 
 /**
  * @desc global variables
@@ -16,12 +19,16 @@ const renderPagination = (obj) => {
   const nextBtn = document.getElementById("next_btn");
 
   if (obj.current_page == 1) {
+    prevBtn.style.pointerEvents = "none";
+    prevBtn.classList.add("disabled");
     nextBtn.classList.remove("disabled");
+    nextBtn.style.pointerEvents = "";
   } else if (obj.current_page == obj.last_page) {
     nextBtn.classList.add("disabled");
   } else {
+    prevBtn.style.pointerEvents = "";
     nextBtn.classList.remove("disabled");
-    nextBtn.classList.remove("disabled");
+    prevBtn.classList.remove("disabled");
   }
 };
 
@@ -61,6 +68,23 @@ const fetchFilms = async (page = 1, pageSize = 10, category = "") => {
   renderPagination(data);
   parsedData(data["data"], "films");
 };
+
+const goToPreviousPage = async () => {
+  current_page--;
+  fetchFilms(current_page, page_size);
+};
+
+document.getElementById("previous_btn").addEventListener("click", () => {
+  goToPreviousPage();
+});
+
+const goToNextPage = async () => {
+  current_page++;
+  fetchFilms(current_page, page_size);
+};
+document.getElementById("next_btn").addEventListener("click", () => {
+  goToNextPage();
+});
 
 /**
  * @param {object} htmlElement object
@@ -197,14 +221,14 @@ const parsedData = (data, resource_name) => {
     case "films":
       data.forEach((data) => {
         rows += `
-            <tr>
-            <td>${data.film_id}</td>
-            <td>${data.title}</td>
-            <td>${data.description}</td>
-            <td>${data.language}</td>
-            <td>${data.category}</td>
-            <td>${data.actor.first_name} ${data.actor.last_name}</td>
-            <td>${data.release_year}</td>
+            <tr id='row_data'>
+              <td>${data.film_id}</td>
+              <td>${data.title}</td>
+              <td>${data.description}</td>
+              <td>${data.language}</td>
+              <td>${data.category}</td>
+              <td>${data.actor.first_name} ${data.actor.last_name}</td>
+              <td>${data.release_year}</td>
             </tr>
             `;
       });
@@ -260,18 +284,18 @@ const getData = async (url) => {
   }
 };
 
-/**
- * @desc remove a single item in the table
- * @param {object} e - The source of the event
- */
-function removeItem(e) {
-  let target, elParent, elGrandParent;
-  target = e.target || e.srcElement;
-  elParent = target.parentNode;
-  elGrandParent = elParent.parentNode;
-  elGrandParent.removeChild(elParent);
-  updateItemCounter();
-}
+// /**
+//  * @desc remove a single item in the table
+//  * @param {object} e - The source of the event
+//  */
+// function removeItem(e) {
+//   let target, elParent, elGrandParent;
+//   target = e.target || e.srcElement;
+//   elParent = target.parentNode;
+//   elGrandParent = elParent.parentNode;
+//   elGrandParent.removeChild(elParent);
+//   updateItemCounter();
+// }
 /**
  * @desc update the counter badge when item is removed
  */
