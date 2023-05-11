@@ -31,6 +31,46 @@
                 <option value="categories">categories</option>
                 <option value="actors">actors</option>
             </select>
+            <!-- filter 1 -->
+            <div class="row ">
+                <div class="col">
+                    <select id="select_sortByID" class="form-select my-2" aria-label="Default select example">
+                        <option selected>Language</option>
+                        <option value="English">English</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="Mandarin">Mandarin</option>
+                        <option value="French">French</option>
+                        <option value="German">German</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <input type="text" id="categoryID" name="category" class="form-control my-2"
+                        placeholder="Enter Category" aria-label="Category">
+                </div>
+                <div class="col">
+                    <input type="text" id="titleID" name="title" class="form-control my-2" placeholder="Enter Title"
+                        aria-label="title">
+                </div>
+                <div class="col">
+                    <input type="text" id="descriptionID" name="description" class="form-control my-2"
+                        placeholder="Enter description" aria-label="description">
+                </div>
+                <div class="col">
+                    <button type="button" id="applyBtnID" class="btn btn-primary my-2">Apply</button>
+                </div>
+            </div>
+            <!-- end filter 1 -->
+            <!-- search -->
+            <div class="row w-25">
+                <div class="col">
+                    <input type="number" class="form-control my-2" placeholder="search film id " aria-label="Film id">
+                </div>
+                <div class="col">
+                    <button type="button" id="searchBtnID" class="btn btn-primary my-2">Search film</button>
+                </div>
+            </div>
+            <!-- end search -->
             <br>
             <button id="shows_btn_id" type="button" class="btn btn-primary position-relative">
                 Show
