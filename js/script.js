@@ -6,11 +6,6 @@ let previous_page = -1;
 let page_size = 10;
 
 /**
- * @desc global variables
- */
-const submitBtn = document.getElementById("submitBtn");
-
-/**
  * @description renders the pagination
  * @param {Response} obj
  */
@@ -29,6 +24,79 @@ const renderPagination = (obj) => {
     prevBtn.style.pointerEvents = "";
     nextBtn.classList.remove("disabled");
     prevBtn.classList.remove("disabled");
+  }
+};
+
+/**
+ * @description function to disable pagination
+ */
+const disablePagination = () => {
+  const prevBtn = document.getElementById("previous_btn");
+  const nextBtn = document.getElementById("next_btn");
+  prevBtn.style.pointerEvents = "none";
+  prevBtn.classList.add("disabled");
+  nextBtn.classList.add("disabled");
+  nextBtn.style.pointerEvents = "none";
+};
+
+/**
+ * @description event handler for searching specific film
+ */
+document.getElementById("searchBtnID").addEventListener("click", () => {
+  disablePagination();
+  clearData();
+  const id = document.getElementById("search_id_input").value;
+  var inputEl = document.getElementById("search_id_input");
+  if (!validateID(id)) {
+    alert("Id has to be valid positive number");
+    return;
+  }
+  fetchFilmsById(id);
+  inputEl.value = "";
+});
+
+/**
+ *
+ * @param {string} id
+ * @returns boolean
+ * @description validate if the id is a valid number and positive
+ */
+const validateID = (id) => {
+  id = id.trim();
+  if (!id) {
+    return false;
+  }
+  id = id.replace(/^0+/, "") || "0";
+  var n = Math.floor(Number(id));
+  return n !== Infinity && String(n) === id && n >= 0;
+};
+
+/**
+ *  @description fetch a specific film using the id
+ * @param {string} id
+ */
+const fetchFilmsById = async (id) => {
+  let uri = new URL("films-api/films/" + id, baseUrl);
+
+  const myInit = {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  };
+
+  const request = new Request(uri, myInit);
+  try {
+    response = await fetch(request);
+    if (response.ok) {
+      FilmTableByID("filmsByID");
+      const data = await response.json();
+      parsedData(data, "filmsByID");
+    } else {
+      alert("resource not found");
+    }
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -69,15 +137,20 @@ const fetchFilms = async (page = 1, pageSize = 10, category = "") => {
   parsedData(data["data"], "films");
 };
 
+/**
+ * @description return the previous page
+ */
 const goToPreviousPage = async () => {
   current_page--;
   fetchFilms(current_page, page_size);
 };
-
 document.getElementById("previous_btn").addEventListener("click", () => {
   goToPreviousPage();
 });
 
+/**
+ * @description go to the next page
+ */
 const goToNextPage = async () => {
   current_page++;
   fetchFilms(current_page, page_size);
@@ -85,57 +158,6 @@ const goToNextPage = async () => {
 document.getElementById("next_btn").addEventListener("click", () => {
   goToNextPage();
 });
-
-/**
- * @param {object} htmlElement object
- * @description validate and processes form data
- */
-submitBtn.addEventListener("click", (e) => {
-  "use strict";
-  handleCreateActor(e);
-});
-
-/**
- * @description
- * @returns None
- */
-const handleCreateActor = async (e) => {
-  const form = document.getElementById("actor_form");
-  let uri = new URL("films-api/actors", baseUrl);
-  var myModalEl = document.getElementById("staticBackdrop");
-  var modal = bootstrap.Modal.getOrCreateInstance(myModalEl);
-  const fname = sanitizeInput(document.getElementById("first_name").value);
-  const lname = sanitizeInput(document.getElementById("last_name").value);
-
-  if (!fname || !lname) {
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var forms = document.querySelectorAll(".needs-validation");
-    // Loop over them and prevent submission
-    Array.prototype.slice.call(forms).forEach(function (form) {
-      if (!form.checkValidity()) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-
-      form.classList.add("was-validated");
-    });
-    return;
-  }
-
-  var bodyReq = JSON.stringify([{ first_name: fname, last_name: lname }]);
-  try {
-    const response = await fetch(uri, {
-      method: "POST",
-      body: bodyReq,
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await response.json();
-  } catch (error) {
-    console.error(error);
-  }
-  modal.hide();
-  resetForm();
-};
 
 /**
  *
@@ -170,6 +192,42 @@ const clearData = () => {
  * @description change table header based on the resource_name
  */
 
+/**
+ *
+ * @param {string} resource_name
+ * @description change table header for search film by ID
+ */
+const FilmTableByID = (resource_name) => {
+  let header = "";
+  if (resource_name == "filmsByID") {
+    header += `
+        <th>#</th>
+        <th>Title</th>
+        <th>Release year</th>
+        <th>Rental rate</th>
+        <th>Replacement cost</th>
+        <th>Rating</th>
+        <th>Length</th>
+        `;
+  } else {
+    header += `
+    <th>#</th>
+    <th>Title</th>
+    <th>Description</th>
+    <th>Language</th>
+    <th>Category</th>
+    <th>Actor</th>
+    <th>Release Year</th>
+    `;
+  }
+  const tblHeader = document.getElementById("tbl_header");
+  tblHeader.innerHTML = header;
+};
+
+/**
+ * @description change table header base on the resource name
+ * @param {string} resource_name
+ */
 const changeTable = (resource_name) => {
   let header = "";
 
@@ -233,6 +291,21 @@ const parsedData = (data, resource_name) => {
             `;
       });
       break;
+    case "filmsByID":
+      data.forEach((data) => {
+        rows += `
+            <tr id='row_data'>
+              <td>${data.film_id}</td>
+              <td>${data.title}</td>
+              <td>${data.release_year}</td>
+              <td>$${data.rental_rate}</td>
+              <td>$${data.replacement_cost}</td>
+              <td>${data.rating}</td>
+              <td>${data.length}</td>
+            </tr>
+            `;
+      });
+      break;
 
     case "categories":
       break;
@@ -250,9 +323,9 @@ const parsedData = (data, resource_name) => {
 /**
  * @desc display error message
  */
-const displayErr = () => {
+const displayErr = (message) => {
   const tblEl = document.getElementById("tbl-body");
-  tblEl.innerHTML = "<b> something went wrong with your request </b>";
+  tblEl.innerHTML = message;
 };
 
 /**
@@ -284,18 +357,6 @@ const getData = async (url) => {
   }
 };
 
-// /**
-//  * @desc remove a single item in the table
-//  * @param {object} e - The source of the event
-//  */
-// function removeItem(e) {
-//   let target, elParent, elGrandParent;
-//   target = e.target || e.srcElement;
-//   elParent = target.parentNode;
-//   elGrandParent = elParent.parentNode;
-//   elGrandParent.removeChild(elParent);
-//   updateItemCounter();
-// }
 /**
  * @desc update the counter badge when item is removed
  */
