@@ -4,6 +4,7 @@ let baseUrl = window.location.protocol + "//" + window.location.hostname;
 let current_page = 1;
 let previous_page = -1;
 let page_size = 10;
+let filtersMap = new Map();
 
 /**
  * @description renders the pagination
@@ -104,7 +105,7 @@ const fetchFilmsById = async (id) => {
  * @desc fetch films data from localhost/films-api
  * TODO add the url as a parameters
  */
-const fetchFilms = async (page = 1, pageSize = 10, category = "") => {
+const fetchFilms = async (page = 1, pageSize = 10, filterObj = new Map()) => {
   // create a url
   let uri = new URL("films-api/films", baseUrl);
   // create new uri
@@ -117,12 +118,21 @@ const fetchFilms = async (page = 1, pageSize = 10, category = "") => {
     );
 
   var newUrl = NaN;
-
-  if (category) {
+  console.log(filterObj);
+  if (filterObj.length !== 0) {
+    languageFilter = filterObj.has("language") ? filterObj.get("language") : "";
+    categoryFilter = filterObj.has("category") ? filterObj.get("category") : "";
+    titleFilter = filterObj.has("title") ? filterObj.get("title") : "";
+    descriptionFilter = filterObj.has("description")
+      ? filterObj.get("description")
+      : "";
     newUrl = addQueries(uri, {
       page: page,
       pageSize: pageSize,
-      category: category,
+      language: languageFilter,
+      category: categoryFilter,
+      title: titleFilter,
+      description: descriptionFilter,
     });
   } else {
     newUrl = addQueries(uri, {
@@ -132,6 +142,11 @@ const fetchFilms = async (page = 1, pageSize = 10, category = "") => {
   }
   // console.log(newUrl.href);
   const data = await getData(newUrl.href);
+
+  if (!data) {
+    alert("resource does not exists");
+    clearData();
+  }
   // render pagination
   renderPagination(data);
   parsedData(data["data"], "films");
@@ -142,7 +157,7 @@ const fetchFilms = async (page = 1, pageSize = 10, category = "") => {
  */
 const goToPreviousPage = async () => {
   current_page--;
-  fetchFilms(current_page, page_size);
+  fetchFilms(current_page, page_size, filtersMap);
 };
 document.getElementById("previous_btn").addEventListener("click", () => {
   goToPreviousPage();
@@ -153,7 +168,7 @@ document.getElementById("previous_btn").addEventListener("click", () => {
  */
 const goToNextPage = async () => {
   current_page++;
-  fetchFilms(current_page, page_size);
+  fetchFilms(current_page, page_size, filtersMap);
 };
 document.getElementById("next_btn").addEventListener("click", () => {
   goToNextPage();
@@ -179,6 +194,8 @@ const sanitizeInput = (input) => {
  * @desc Clears the table
  */
 const clearData = () => {
+  filtersMap.clear();
+  disablePagination();
   const tblEl = document.getElementById("tbl-body");
   tblEl.textContent = "";
 
@@ -232,6 +249,7 @@ const changeTable = (resource_name) => {
   let header = "";
 
   if (resource_name == "films") {
+    hideCreateActorBtn();
     header += `
         <th>#</th>
         <th>Title</th>
@@ -242,6 +260,7 @@ const changeTable = (resource_name) => {
         <th>Release Year</th>
         `;
   } else if (resource_name == "actors") {
+    showCreateActorBtn();
     header += `
         <th>#</th>
         <th>First Name</th>
@@ -253,6 +272,7 @@ const changeTable = (resource_name) => {
         <th>Release Year</th>
         `;
   } else {
+    hideCreateActorBtn();
     header += `
         <th>#</th>
         <th>Category</th>
@@ -354,6 +374,7 @@ const getData = async (url) => {
     }
   } catch (err) {
     console.log(err);
+    return false;
   }
 };
 
@@ -375,6 +396,7 @@ const updateItemCounter = () => {
  * @description fetch films based on the selected resource name
  */
 document.getElementById("shows_btn_id").addEventListener("click", () => {
+  filtersMap.clear();
   switch (resource_name) {
     case "films":
       fetchFilms();
@@ -432,3 +454,26 @@ const resetForm = () => {
   var form = document.getElementById("actor_form");
   form.reset();
 };
+
+/**
+ * @description applies resource filtering on films
+ */
+document.getElementById("applyBtnID").addEventListener("click", () => {
+  const languageValue = document.getElementById("select_languageID").value;
+  const categoryValue = document.getElementById("categoryID").value;
+  const titleValue = document.getElementById("titleID").value;
+  const descriptionValue = document.getElementById("descriptionID").value;
+  if (languageValue !== "Language") {
+    filtersMap.set("language", languageValue);
+  }
+  if (categoryValue.length != 0) {
+    filtersMap.set("category", categoryValue);
+  }
+  if (titleValue.length != 0) {
+    filtersMap.set("title", titleValue);
+  }
+  if (descriptionValue.length != 0) {
+    filtersMap.set("description", descriptionValue);
+  }
+  fetchFilms(1, 10, filtersMap);
+});
