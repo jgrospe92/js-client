@@ -1,3 +1,6 @@
+/**
+ * @description global variables
+ */
 let globalCounter = 0;
 let resource_name = "films";
 let baseUrl = window.location.protocol + "//" + window.location.hostname;
@@ -5,6 +8,7 @@ let current_page = 1;
 let previous_page = -1;
 let page_size = 10;
 let filtersMap = new Map();
+let selectCategoryId = "";
 
 /**
  * @description renders the pagination
@@ -52,6 +56,7 @@ document.getElementById("searchBtnID").addEventListener("click", () => {
     alert("Id has to be valid positive number");
     return;
   }
+  console.log("search film id");
   fetchFilmsById(id);
   inputEl.value = "";
 });
@@ -118,7 +123,7 @@ const fetchFilms = async (page = 1, pageSize = 10, filterObj = new Map()) => {
     );
 
   var newUrl = NaN;
-  console.log(filterObj);
+
   if (filterObj.length !== 0) {
     languageFilter = filterObj.has("language") ? filterObj.get("language") : "";
     categoryFilter = filterObj.has("category") ? filterObj.get("category") : "";
@@ -153,11 +158,61 @@ const fetchFilms = async (page = 1, pageSize = 10, filterObj = new Map()) => {
 };
 
 /**
+ * @desc fetch films data from localhost/films-api/categories/id/films
+ *
+ */
+const fetchFilmsByCategory = async (
+  categoryId,
+  page = 1,
+  pageSize = 10,
+  filterObj = new Map()
+) => {
+  // create a url
+  let uri = new URL("films-api/categories/" + categoryId + "/films", baseUrl);
+  // create new uri
+  const addQueries = (url, params = {}) =>
+    new URL(
+      `${url.origin}${url.pathname}?${new URLSearchParams([
+        ...Array.from(url.searchParams.entries()),
+        ...Object.entries(params),
+      ])}`
+    );
+
+  var newUrl = NaN;
+
+  if (filterObj.length !== 0) {
+    film_lengthFilter = filterObj.has("film_length")
+      ? filterObj.get("film_length")
+      : "";
+    ratingFilter = filterObj.has("rating") ? filterObj.get("rating") : "";
+    newUrl = addQueries(uri, {
+      film_length: film_lengthFilter,
+      rating: ratingFilter,
+    });
+  } else {
+    newUrl = addQueries(uri, {});
+  }
+  // console.log(newUrl.href);
+  const data = await getData(newUrl.href);
+
+  if (!data) {
+    alert("resource does not exists");
+    clearData();
+  }
+  console.log(data);
+  parsedData(data, "categories");
+};
+
+/**
  * @description return the previous page
  */
 const goToPreviousPage = async () => {
   current_page--;
-  fetchFilms(current_page, page_size, filtersMap);
+  if (resource_name == "films") {
+    fetchFilms(current_page, page_size, filtersMap);
+  } else if (resource_name == "categories") {
+    alert("previous button clicked");
+  }
 };
 document.getElementById("previous_btn").addEventListener("click", () => {
   goToPreviousPage();
@@ -168,7 +223,11 @@ document.getElementById("previous_btn").addEventListener("click", () => {
  */
 const goToNextPage = async () => {
   current_page++;
-  fetchFilms(current_page, page_size, filtersMap);
+  if (resource_name == "films") {
+    fetchFilms(current_page, page_size, filtersMap);
+  } else if (resource_name == "categories") {
+    alert("next button clicked");
+  }
 };
 document.getElementById("next_btn").addEventListener("click", () => {
   goToNextPage();
@@ -191,7 +250,7 @@ const sanitizeInput = (input) => {
 };
 
 /**
- * @desc Clears the table
+ * @desc Clears the table / forms
  */
 const clearData = () => {
   filtersMap.clear();
@@ -201,6 +260,11 @@ const clearData = () => {
 
   const counter = document.getElementById("data_count");
   counter.textContent = 0;
+
+  const selectCategoryParentEl = document.getElementById("select_categoryID");
+  if (selectCategoryParentEl) {
+    selectCategoryParentEl.value = "-1";
+  }
 };
 
 /**
@@ -247,9 +311,10 @@ const FilmTableByID = (resource_name) => {
  */
 const changeTable = (resource_name) => {
   let header = "";
-
+  filtersMap.clear();
   if (resource_name == "films") {
     hideCreateActorBtn();
+    showFilmsFilter();
     header += `
         <th>#</th>
         <th>Title</th>
@@ -261,6 +326,7 @@ const changeTable = (resource_name) => {
         `;
   } else if (resource_name == "actors") {
     showCreateActorBtn();
+    removeFilmsFilter();
     header += `
         <th>#</th>
         <th>First Name</th>
@@ -273,6 +339,9 @@ const changeTable = (resource_name) => {
         `;
   } else {
     hideCreateActorBtn();
+    removeFilmsFilter();
+    showCategorySelectContent();
+    categoryCallback();
     header += `
         <th>#</th>
         <th>Category</th>
@@ -328,6 +397,19 @@ const parsedData = (data, resource_name) => {
       break;
 
     case "categories":
+      data.films.data.forEach((value) => {
+        rows += `
+            <tr id='row_data'>
+              <td>${value.film_id}</td>
+              <td>${data.category.name}</td>
+              <td>${value.title}</td>
+              <td>${value.description}</td>
+              <td>${value.length}</td>
+              <td>${value.rating}</td>
+              <td>${value.release_year}</td>
+            </tr>
+            `;
+      });
       break;
     case "actors":
       break;
@@ -337,6 +419,9 @@ const parsedData = (data, resource_name) => {
   tblEl.innerHTML = rows;
   const counter = document.getElementById("data_count");
   globalCounter = data.length;
+  if (resource_name == "categories") {
+    globalCounter = data.films.count;
+  }
   counter.innerHTML = globalCounter;
 };
 
@@ -399,9 +484,13 @@ document.getElementById("shows_btn_id").addEventListener("click", () => {
   filtersMap.clear();
   switch (resource_name) {
     case "films":
+      console.log("films clicked");
       fetchFilms();
       break;
     case "categories":
+      if (selectCategoryId.length > 0) {
+        fetchFilmsByCategory(selectCategoryId);
+      }
       break;
     case "actors":
       break;
@@ -411,7 +500,12 @@ document.getElementById("shows_btn_id").addEventListener("click", () => {
 /**
  * @description clears the table
  */
-document.getElementById("clear_btn").onclick = clearData;
+document.getElementById("clear_btn").addEventListener("click", () => {
+  clearData();
+  if (resource_name == "films") {
+    resetFilmsFilter();
+  }
+});
 
 /**
  * @param {object} takes an html object
@@ -463,6 +557,7 @@ document.getElementById("applyBtnID").addEventListener("click", () => {
   const categoryValue = document.getElementById("categoryID").value;
   const titleValue = document.getElementById("titleID").value;
   const descriptionValue = document.getElementById("descriptionID").value;
+  console.log("films apply filter");
   if (languageValue !== "Language") {
     filtersMap.set("language", languageValue);
   }
@@ -477,3 +572,14 @@ document.getElementById("applyBtnID").addEventListener("click", () => {
   }
   fetchFilms(1, 10, filtersMap);
 });
+
+/**
+ * @description callback for select category
+ */
+const categoryCallback = () => {
+  document
+    .getElementById("select_categoryID")
+    .addEventListener("change", (e) => {
+      selectCategoryId = e.target.value;
+    });
+};

@@ -12,4 +12,98 @@ const showCreateActorBtn = () => {
   document.getElementById("create_actorBtn").style.display = "block";
 };
 
+/**
+ * @description hides the create actor button with the page loads
+ */
 window.addEventListener("load", hideCreateActorBtn());
+
+/**
+ * @description shows the categories select input
+ */
+const showCategorySelectContent = () => {
+  const filter_inputEl = document.getElementById("films_filters_parentInputID");
+  let categorySelectContent = `
+  <div class="col">
+  <p class="my-2">Select Category: </p>
+  <select id="select_categoryID" class="form-select my-2" aria-label="Default select example">
+    <option selected value="-1">Category</option>
+      <option value="1">Action</option>
+      <option value="2">Animation</option>
+      <option value="3">Children</option>
+      <option value="4">Classics</option>
+      <option value="5">Comedy</option>
+      <option value="6">Documentary</option>
+      <option value="7">Drama</option>
+      <option value="8">Family</option>
+      <option value="9">Foreign</option>
+      <option value="10">Games</option>
+      <option value="11">Horror</option>
+      <option value="12">Music</option>
+      <option value="13">New</option>
+      <option value="14">Sci-Fi</option>
+      <option value="15">Sports</option>
+      <option value="16">Travel</option>
+  </select>
+</div>`;
+
+  filter_inputEl.innerHTML = categorySelectContent;
+};
+/**
+ * @desc removes the films filters
+ */
+const removeFilmsFilter = () => {
+  const filter_inputEl = document.getElementById("films_filters_parentInputID");
+  filter_inputEl.innerHTML = "";
+  document.getElementById("search_film_parentInputID").innerHTML = "";
+};
+
+/**
+ * @desc shows the films filters
+ */
+const showFilmsFilter = () => {
+  const filter_inputEl = document.getElementById("films_filters_parentInputID");
+  let content = `<div class="col">
+  <select id="select_languageID" class="form-select my-2" aria-label="Default select example">
+      <option selected>Language</option>
+      <option value="English">English</option>
+      <option value="Italian">Italian</option>
+      <option value="Japanese">Japanese</option>
+      <option value="Mandarin">Mandarin</option>
+      <option value="French">French</option>
+      <option value="German">German</option>
+  </select>
+</div>
+<div class="col">
+  <input type="text" id="categoryID" name="category" class="form-control my-2"
+      placeholder="Enter Category" aria-label="Category">
+</div>
+<div class="col">
+  <input type="text" id="titleID" name="title" class="form-control my-2" placeholder="Enter Title"
+      aria-label="title">
+</div>
+<div class="col">
+  <input type="text" id="descriptionID" name="description" class="form-control my-2"
+      placeholder="Enter description" aria-label="description">
+</div>
+<div class="col">
+  <button type="button" id="applyBtnID" class="btn btn-primary my-2">Apply</button>
+</div>`;
+  filter_inputEl.innerHTML = content;
+
+  let searchByFilmParentContent = `<div class="col">
+  <input id="search_id_input" type="number" class="form-control my-2" placeholder="search film id "
+      aria-label="Film id">
+</div>
+<div class="col">
+  <button type="button" id="searchBtnID" class="btn btn-primary my-2">Search film</button>
+</div>`;
+  document.getElementById("search_film_parentInputID").innerHTML =
+    searchByFilmParentContent;
+};
+
+const resetFilmsFilter = () => {
+  document.getElementById("select_languageID").value = "Language";
+  document.getElementById("categoryID").value = "";
+  document.getElementById("titleID").value = "";
+  document.getElementById("descriptionID").value = "";
+};
