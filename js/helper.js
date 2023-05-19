@@ -128,6 +128,7 @@ const showFilmsFilter = () => {
     searchByFilmParentContent;
 
   buttonCallback();
+  instantiateApplyButton();
 };
 
 const resetFilmsFilter = () => {

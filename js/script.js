@@ -602,6 +602,32 @@ document.getElementById("applyBtnID").addEventListener("click", () => {
   fetchFilms(1, 10, filtersMap);
 });
 
+const instantiateApplyButton = () => {
+  /**
+   * @description applies resource filtering on films
+   */
+  document.getElementById("applyBtnID").addEventListener("click", () => {
+    const languageValue = document.getElementById("select_languageID").value;
+    const categoryValue = document.getElementById("categoryID").value;
+    const titleValue = document.getElementById("titleID").value;
+    const descriptionValue = document.getElementById("descriptionID").value;
+    console.log("films apply filter");
+    if (languageValue !== "Language") {
+      filtersMap.set("language", languageValue);
+    }
+    if (categoryValue.length != 0) {
+      filtersMap.set("category", categoryValue);
+    }
+    if (titleValue.length != 0) {
+      filtersMap.set("title", titleValue);
+    }
+    if (descriptionValue.length != 0) {
+      filtersMap.set("description", descriptionValue);
+    }
+    fetchFilms(1, 10, filtersMap);
+  });
+};
+
 /**
  * @description callback for select category
  */
