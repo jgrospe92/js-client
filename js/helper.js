@@ -83,6 +83,36 @@ const removeFilmsFilter = () => {
   document.getElementById("search_film_parentInputID").innerHTML = "";
 };
 
+const addActorsFilter = () => {
+  const filter_inputEl = document.getElementById("search_film_parentInputID");
+  // first name and last filter
+  let lastName = `<div class="col">
+  <input id="actor_lastNameID" type="text" class="form-control my-2" placeholder="Enter Last name"
+      aria-label="actor_firstNameID ">
+  </div>`;
+
+  let content =
+    `
+  <div class="col">
+  <input id="actor_firstNameID" type="text" class="form-control my-2" placeholder="Enter First name"
+      aria-label="search_id_input ">
+  </div>
+  ` +
+    lastName +
+    `
+  <div class="col">
+  <button type="button" id="search_actor_id" class="btn btn-primary my-2">Search Actor</button>
+  </div>
+  `;
+
+  let fil;
+
+  filter_inputEl.innerHTML = content;
+  filter_inputEl.className = "row w-50";
+
+  instantiateSearchActor();
+};
+
 /**
  * @desc shows the films filters
  */

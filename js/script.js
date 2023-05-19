@@ -130,6 +130,57 @@ const fetchFilmsById = async (id) => {
 };
 
 /**
+ * @description fetch actors
+ * @param {Map} filterObj
+ */
+const fetchActors = async (filterObj = new Map()) => {
+  // create a url
+  let uri = new URL("films-api/actors", baseUrl);
+  // create new uri
+  const addQueries = (url, params = {}) =>
+    new URL(
+      `${url.origin}${url.pathname}?${new URLSearchParams([
+        ...Array.from(url.searchParams.entries()),
+        ...Object.entries(params),
+      ])}`
+    );
+
+  var newUrl = NaN;
+
+  if (filterObj.length !== 0) {
+    firstNameFilter = filterObj.has("first_name")
+      ? filterObj.get("first_name")
+      : "";
+    lastNameFilter = filterObj.has("last_name")
+      ? filterObj.get("last_name")
+      : "";
+    titleFilter = filterObj.has("title") ? filterObj.get("title") : "";
+    descriptionFilter = filterObj.has("description")
+      ? filterObj.get("description")
+      : "";
+    newUrl = addQueries(uri, {
+      first_name: firstNameFilter,
+      last_name: lastNameFilter,
+    });
+  } else {
+    newUrl = addQueries(uri, {
+      page: page,
+      pageSize: pageSize,
+    });
+  }
+
+  const data = await getData(newUrl.href);
+
+  if (!data) {
+    alert("resource does not exists");
+    clearData();
+  }
+  // render pagination
+  disablePagination();
+  parsedData(data, "actors");
+};
+
+/**
  * @desc fetch films data from localhost/films-api
  * TODO add the url as a parameters
  */
@@ -292,6 +343,16 @@ const clearData = () => {
       filmLength.value = "";
     }
   }
+  if (resource_name == "actors") {
+    const first_name = document.getElementById("actor_firstNameID");
+    const last_name = document.getElementById("actor_lastNameID");
+    if (first_name) {
+      first_name.value = "";
+    }
+    if (last_name) {
+      last_name.value = "";
+    }
+  }
 };
 
 /**
@@ -355,15 +416,11 @@ const changeTable = (resource_name) => {
   } else if (resource_name == "actors") {
     showCreateActorBtn();
     removeFilmsFilter();
+    addActorsFilter();
     header += `
         <th>#</th>
         <th>First Name</th>
         <th>Last Name</th>
-        <th>Film title</th>
-        <th>Description</th>
-        <th>Category</th>
-        <th>Name</th>
-        <th>Release Year</th>
         `;
   } else {
     hideCreateActorBtn();
@@ -423,6 +480,17 @@ const parsedData = (data, resource_name) => {
             `;
       });
       break;
+    case "actors":
+      data.forEach((data) => {
+        rows += `
+              <tr id='row_data'>
+                <td>${data.actor_id}</td>
+                <td>${data.first_name}</td>
+                <td>${data.last_name}</td>
+              </tr>
+              `;
+      });
+      break;
 
     case "categories":
       data.films.data.forEach((value) => {
@@ -438,8 +506,6 @@ const parsedData = (data, resource_name) => {
             </tr>
             `;
       });
-      break;
-    case "actors":
       break;
   }
 
@@ -481,6 +547,7 @@ const getData = async (url) => {
   // STEP 3 - Now we can send the request using the fetch APi
   try {
     response = await fetch(request);
+
     if (response.ok) {
       const data = await response.json();
       return data;
@@ -512,15 +579,18 @@ document.getElementById("shows_btn_id").addEventListener("click", () => {
   filtersMap.clear();
   switch (resource_name) {
     case "films":
-      console.log("films clicked");
       fetchFilms();
       break;
     case "categories":
-      if (selectCategoryId.length > 0) {
+      const categoryId = document.getElementById("select_categoryID").value;
+      if (categoryId > 0) {
         fetchFilmsByCategory(selectCategoryId);
+      } else {
+        alert("Please select a category");
       }
       break;
     case "actors":
+      fetchActors();
       break;
   }
 });
@@ -575,6 +645,27 @@ document.getElementById("clear_form").addEventListener(
 const resetForm = () => {
   var form = document.getElementById("actor_form");
   form.reset();
+};
+
+const instantiateSearchActor = () => {
+  document.getElementById("search_actor_id").addEventListener("click", () => {
+    const first_name = document.getElementById("actor_firstNameID").value;
+    const last_name = document.getElementById("actor_lastNameID").value;
+    console.log(first_name + " " + last_name);
+
+    if (!first_name && !last_name) {
+      alert("Please provide at least the first name or last name");
+      return;
+    }
+    if (first_name) {
+      filtersMap.set("first_name", first_name);
+    }
+    if (last_name) {
+      filtersMap.set("last_name", last_name);
+    }
+
+    fetchActors(filtersMap);
+  });
 };
 
 /**
