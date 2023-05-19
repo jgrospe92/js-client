@@ -46,7 +46,33 @@ const showCategorySelectContent = () => {
   </select>
 </div>`;
 
+  // Length and rating filter
+  let ratingFilter = `<div class="col">
+  <input id="rating_input_id" type="text" class="form-control my-2" placeholder="Enter Rating"
+      aria-label="search_id_input ">
+  </div>`;
+
+  let filmFilters =
+    `
+  <div class="col">
+  <input id="search_input" type="number" class="form-control my-2" placeholder="Enter film Length"
+      aria-label="search_id_input ">
+  </div>
+  ` +
+    ratingFilter +
+    `
+  <div class="col">
+  <button type="button" id="searchBtnID" class="btn btn-primary my-2">Apply</button>
+  </div>
+  `;
+
+  let filterParentEl = document.getElementById("search_film_parentInputID");
+  filterParentEl.className = "row w-50";
+  filterParentEl.innerHTML = filmFilters;
+
   filter_inputEl.innerHTML = categorySelectContent;
+
+  buttonCallback();
 };
 /**
  * @desc removes the films filters
@@ -91,14 +117,17 @@ const showFilmsFilter = () => {
   filter_inputEl.innerHTML = content;
 
   let searchByFilmParentContent = `<div class="col">
-  <input id="search_id_input" type="number" class="form-control my-2" placeholder="search film id "
+  <input id="search_input" type="number" class="form-control my-2" placeholder="search film id "
       aria-label="Film id">
 </div>
 <div class="col">
   <button type="button" id="searchBtnID" class="btn btn-primary my-2">Search film</button>
 </div>`;
+  document.getElementById("search_film_parentInputID").className = "row w-25";
   document.getElementById("search_film_parentInputID").innerHTML =
     searchByFilmParentContent;
+
+  buttonCallback();
 };
 
 const resetFilmsFilter = () => {

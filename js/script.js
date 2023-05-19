@@ -47,19 +47,37 @@ const disablePagination = () => {
 /**
  * @description event handler for searching specific film
  */
-document.getElementById("searchBtnID").addEventListener("click", () => {
-  disablePagination();
-  clearData();
-  const id = document.getElementById("search_id_input").value;
-  var inputEl = document.getElementById("search_id_input");
-  if (!validateID(id)) {
-    alert("Id has to be valid positive number");
-    return;
-  }
-  console.log("search film id");
-  fetchFilmsById(id);
-  inputEl.value = "";
-});
+const buttonCallback = () => {
+  document.getElementById("searchBtnID").addEventListener("click", () => {
+    disablePagination();
+    clearData();
+    let inputEl = document.getElementById("search_input");
+    if (resource_name == "films") {
+      const id = inputEl.value;
+      if (!validateID(id)) {
+        alert("Id has to be valid positive number");
+        return;
+      }
+      console.log("search film id");
+      fetchFilmsById(id);
+      inputEl.value = "";
+    } else if (resource_name == "categories") {
+      const ratingParentEl = document.getElementById("rating_input_id");
+      let ratingValue = sanitizeInput(ratingParentEl.value);
+      const film_length = inputEl.value;
+      if (!validateID(film_length)) {
+        if (film_length.length > 0) {
+          alert("Invalid film length");
+          return;
+        }
+      }
+
+      alert(film_length + " rating " + ratingValue);
+    }
+  });
+};
+
+buttonCallback();
 
 /**
  *
@@ -265,6 +283,16 @@ const clearData = () => {
   if (selectCategoryParentEl) {
     selectCategoryParentEl.value = "-1";
   }
+  if (resource_name == "categories") {
+    const rating = document.getElementById("rating_input_id");
+    const filmLength = document.getElementById("search_input");
+    if (rating) {
+      rating.value = "";
+    }
+    if (filmLength) {
+      filmLength.value = "";
+    }
+  }
 };
 
 /**
@@ -312,6 +340,7 @@ const FilmTableByID = (resource_name) => {
 const changeTable = (resource_name) => {
   let header = "";
   filtersMap.clear();
+
   if (resource_name == "films") {
     hideCreateActorBtn();
     showFilmsFilter();
