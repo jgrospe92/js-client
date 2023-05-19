@@ -21,6 +21,7 @@ window.addEventListener("load", hideCreateActorBtn());
  * @description shows the categories select input
  */
 const showCategorySelectContent = () => {
+  removeActorFilmFilters();
   const filter_inputEl = document.getElementById("films_filters_parentInputID");
   let categorySelectContent = `
   <div class="col">
@@ -47,7 +48,8 @@ const showCategorySelectContent = () => {
 </div>`;
 
   // Length and rating filter
-  let ratingFilter = `<div class="col">
+  let ratingFilter = `
+  <div class="col">
   <input id="rating_input_id" type="text" class="form-control my-2" placeholder="Enter Rating"
       aria-label="search_id_input ">
   </div>`;
@@ -85,6 +87,27 @@ const removeFilmsFilter = () => {
 
 const addActorsFilter = () => {
   const filter_inputEl = document.getElementById("search_film_parentInputID");
+  // filter film by category and rating
+  let filtering = `
+  <div class="row w-100">
+  <div class="col">
+  <input id="actor_id_input" type="number" class="form-control my-2" placeholder="Enter id"
+      aria-label="actor_id_input">
+  </div>
+  <div class="col">
+  <input id="rating_input_id" type="text" class="form-control my-2" placeholder="Enter Rating"
+      aria-label="search_id_input">
+  </div>
+  <div class="col">
+  <input type="text" id="categoryID" name="category" class="form-control my-2"
+      placeholder="Enter Category" aria-label="Category">
+</div>
+<div class="col">
+<button type="button" id="applyBtnID" class="btn btn-primary my-2">Apply</button>
+</div>
+</div>
+  `;
+
   // first name and last filter
   let lastName = `<div class="col">
   <input id="actor_lastNameID" type="text" class="form-control my-2" placeholder="Enter Last name"
@@ -105,18 +128,25 @@ const addActorsFilter = () => {
   </div>
   `;
 
-  let fil;
-
   filter_inputEl.innerHTML = content;
   filter_inputEl.className = "row w-50";
 
+  // append filter elements
+  let filmFilterParentEl = document.createElement("div");
+  filmFilterParentEl.id = "actor_film_filters_id";
+
+  filmFilterParentEl.innerHTML = filtering;
+  filter_inputEl.insertAdjacentElement("afterend", filmFilterParentEl);
+
   instantiateSearchActor();
+  instantiateApplyButton();
 };
 
 /**
  * @desc shows the films filters
  */
 const showFilmsFilter = () => {
+  removeActorFilmFilters();
   const filter_inputEl = document.getElementById("films_filters_parentInputID");
   let content = `<div class="col">
   <select id="select_languageID" class="form-select my-2" aria-label="Default select example">
@@ -159,6 +189,13 @@ const showFilmsFilter = () => {
 
   buttonCallback();
   instantiateApplyButton();
+};
+
+const removeActorFilmFilters = () => {
+  const parentEl = document.getElementById("actor_film_filters_id");
+  if (parentEl) {
+    parentEl.remove();
+  }
 };
 
 const resetFilmsFilter = () => {

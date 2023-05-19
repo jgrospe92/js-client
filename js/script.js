@@ -57,7 +57,7 @@ const buttonCallback = () => {
         alert("Id has to be valid positive number");
         return;
       }
-      console.log("search film id");
+
       fetchFilmsById(id);
       inputEl.value = "";
     } else if (resource_name == "categories") {
@@ -67,7 +67,7 @@ const buttonCallback = () => {
       }
 
       const ratingParentEl = document.getElementById("rating_input_id");
-      let ratingValue = sanitizeInput(ratingParentEl.value);
+      let ratingValue = ratingParentEl.value;
       let film_length = inputEl.value;
       if (!validateID(film_length)) {
         if (film_length.length > 0) {
@@ -133,6 +133,58 @@ const fetchFilmsById = async (id) => {
  * @description fetch actors
  * @param {Map} filterObj
  */
+const fetchFilmsByActor = async (id, filterObj = new Map()) => {
+  // create a url
+  let uri = new URL("films-api/actors/" + id + "/films", baseUrl);
+  // create new uri
+  const addQueries = (url, params = {}) =>
+    new URL(
+      `${url.origin}${url.pathname}?${new URLSearchParams([
+        ...Array.from(url.searchParams.entries()),
+        ...Object.entries(params),
+      ])}`
+    );
+
+  var newUrl = NaN;
+
+  if (filterObj.length !== 0) {
+    firstNameFilter = filterObj.has("first_name")
+      ? filterObj.get("first_name")
+      : "";
+    lastNameFilter = filterObj.has("last_name")
+      ? filterObj.get("last_name")
+      : "";
+    categoryFilter = filterObj.has("category") ? filterObj.get("category") : "";
+    ratingFilter = filterObj.has("rating") ? filterObj.get("rating") : "";
+
+    newUrl = addQueries(uri, {
+      first_name: firstNameFilter,
+      last_name: lastNameFilter,
+      category: categoryFilter,
+      rating: ratingFilter,
+      pageSize: 500,
+    });
+  } else {
+    newUrl = addQueries(uri, {
+      pageSize: 500,
+    });
+  }
+
+  const data = await getData(newUrl.href);
+
+  if (!data) {
+    alert("resource does not exists");
+    clearData();
+  }
+  // render pagination
+  disablePagination();
+  parsedData(data, "filmsByActor");
+};
+
+/**
+ * @description fetch actors
+ * @param {Map} filterObj
+ */
 const fetchActors = async (filterObj = new Map()) => {
   // create a url
   let uri = new URL("films-api/actors", baseUrl);
@@ -154,19 +206,12 @@ const fetchActors = async (filterObj = new Map()) => {
     lastNameFilter = filterObj.has("last_name")
       ? filterObj.get("last_name")
       : "";
-    titleFilter = filterObj.has("title") ? filterObj.get("title") : "";
-    descriptionFilter = filterObj.has("description")
-      ? filterObj.get("description")
-      : "";
     newUrl = addQueries(uri, {
       first_name: firstNameFilter,
       last_name: lastNameFilter,
     });
   } else {
-    newUrl = addQueries(uri, {
-      page: page,
-      pageSize: pageSize,
-    });
+    newUrl = addQueries(uri);
   }
 
   const data = await getData(newUrl.href);
@@ -302,22 +347,6 @@ document.getElementById("next_btn").addEventListener("click", () => {
 });
 
 /**
- *
- * @param {String} input
- * @returns {String} input
- * @desc sanitize user inputs
- */
-const sanitizeInput = (input) => {
-  return input
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#x27;")
-    .replace(/\//g, "&#x2F;");
-};
-
-/**
  * @desc Clears the table / forms
  */
 const clearData = () => {
@@ -346,11 +375,23 @@ const clearData = () => {
   if (resource_name == "actors") {
     const first_name = document.getElementById("actor_firstNameID");
     const last_name = document.getElementById("actor_lastNameID");
+    const rating = document.getElementById("rating_input_id");
+    const category = document.getElementById("categoryID");
+    const actorId = document.getElementById("actor_id_input");
     if (first_name) {
       first_name.value = "";
     }
     if (last_name) {
       last_name.value = "";
+    }
+    if (rating) {
+      rating.value = "";
+    }
+    if (category) {
+      category.value = "";
+    }
+    if (actorId) {
+      actorId.value = "";
     }
   }
 };
@@ -491,7 +532,23 @@ const parsedData = (data, resource_name) => {
               `;
       });
       break;
-
+    case "filmsByActor":
+      let first_name = data.actor.first_name;
+      let last_name = data.actor.last_name;
+      data.films.data.forEach((value) => {
+        rows += `
+        <tr id='row_data'>
+        <td>${value.film_id}</td>
+        <td>${first_name}</td>
+        <td>${last_name}</td>
+        <td>${value.title}</td>
+        <td>${value.description}</td>
+        <td>${value.category}</td>
+        <td>${value.rating}</td>
+      </tr>
+        `;
+      });
+      break;
     case "categories":
       data.films.data.forEach((value) => {
         rows += `
@@ -514,6 +571,9 @@ const parsedData = (data, resource_name) => {
   const counter = document.getElementById("data_count");
   globalCounter = data.length;
   if (resource_name == "categories") {
+    globalCounter = data.films.count;
+  }
+  if (resource_name == "filmsByActor") {
     globalCounter = data.films.count;
   }
   counter.innerHTML = globalCounter;
@@ -590,6 +650,12 @@ document.getElementById("shows_btn_id").addEventListener("click", () => {
       }
       break;
     case "actors":
+      let header = `
+      <th>#</th>
+      <th>First Name</th>
+      <th>Last Name</th>
+      `;
+      document.getElementById("tbl_header").innerHTML = header;
       fetchActors();
       break;
   }
@@ -647,11 +713,20 @@ const resetForm = () => {
   form.reset();
 };
 
+/**
+ * @description fetch actor using first name , last name
+ */
 const instantiateSearchActor = () => {
   document.getElementById("search_actor_id").addEventListener("click", () => {
     const first_name = document.getElementById("actor_firstNameID").value;
     const last_name = document.getElementById("actor_lastNameID").value;
-    console.log(first_name + " " + last_name);
+
+    let header = `
+    <th>#</th>
+    <th>First Name</th>
+    <th>Last Name</th>
+    `;
+    document.getElementById("tbl_header").innerHTML = header;
 
     if (!first_name && !last_name) {
       alert("Please provide at least the first name or last name");
@@ -673,24 +748,54 @@ const instantiateSearchActor = () => {
  */
 const instantiateApplyButton = () => {
   document.getElementById("applyBtnID").addEventListener("click", () => {
-    const languageValue = document.getElementById("select_languageID").value;
-    const categoryValue = document.getElementById("categoryID").value;
-    const titleValue = document.getElementById("titleID").value;
-    const descriptionValue = document.getElementById("descriptionID").value;
-    console.log("films apply filter");
-    if (languageValue !== "Language") {
-      filtersMap.set("language", languageValue);
+    if (resource_name == "films") {
+      const languageValue = document.getElementById("select_languageID").value;
+      const categoryValue = document.getElementById("categoryID").value;
+      const titleValue = document.getElementById("titleID").value;
+      const descriptionValue = document.getElementById("descriptionID").value;
+      console.log("films apply filter");
+      if (languageValue !== "Language") {
+        filtersMap.set("language", languageValue);
+      }
+      if (categoryValue.length != 0) {
+        filtersMap.set("category", categoryValue);
+      }
+      if (titleValue.length != 0) {
+        filtersMap.set("title", titleValue);
+      }
+      if (descriptionValue.length != 0) {
+        filtersMap.set("description", descriptionValue);
+      }
+      fetchFilms(1, 10, filtersMap);
+    } else if (resource_name == "actors") {
+      const tblHeader = document.getElementById("tbl_header");
+      let newHeader = `
+      <th>#</th>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Category</th>
+      <th>Rating</th>
+      `;
+      tblHeader.innerHTML = newHeader;
+
+      // GET input data
+      const actor_id = document.getElementById("actor_id_input").value;
+      const ratingValue = document.getElementById("rating_input_id").value;
+      const categoryValue = document.getElementById("categoryID").value;
+      if (!validateID(actor_id)) {
+        alert("Id has to be valid positive number");
+        return;
+      }
+      if (ratingValue.length != 0) {
+        filtersMap.set("rating", ratingValue);
+      }
+      if (categoryValue.length != 0) {
+        filtersMap.set("category", categoryValue);
+      }
+      fetchFilmsByActor(actor_id, filtersMap);
     }
-    if (categoryValue.length != 0) {
-      filtersMap.set("category", categoryValue);
-    }
-    if (titleValue.length != 0) {
-      filtersMap.set("title", titleValue);
-    }
-    if (descriptionValue.length != 0) {
-      filtersMap.set("description", descriptionValue);
-    }
-    fetchFilms(1, 10, filtersMap);
   });
 };
 /**
