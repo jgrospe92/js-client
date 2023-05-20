@@ -5,6 +5,11 @@
 
 - The primary objective of this project is to provide a user-friendly interface that allows users to consume and utilize the functionalities provided by the Web service. By leveraging the client application, users will be able to perform various actions and retrieve data from the Web service in a convenient and efficient manner.
 
+## Tech Stack
+1. Vanilla JavaScript
+2. Bootstrap 5
+3. FetchApi
+
 ## Key Features:
 
 - Web-based client application: The project involves developing a set of web pages that serve as the front-end interface for interacting with the Web service.
